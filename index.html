@@ -1,0 +1,1568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Halloween Photo Booth</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Covered+By+Your+Grace&family=Permanent+Marker&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            /* Light Mode Colors - Warm Autumn */
+            --bg-primary: #F7E1C9;
+            --bg-secondary: #FAEEE0;
+            --bg-card: rgba(247, 225, 201, 0.85);
+            --text-primary: #513C4E;
+            --text-secondary: #683651;
+            --accent-primary: #EA973B;
+            --accent-secondary: #68660F;
+            --accent-tertiary: #CBBFD3;
+            --border-color: #683651;
+            --button-bg: #EA973B;
+            --button-hover: #D88530;
+            --button-secondary-bg: #68660F;
+            --button-secondary-hover: #7A770D;
+            --button-danger-bg: #924755;
+            --button-danger-hover: #A05563;
+            --shadow-color: rgba(104, 54, 81, 0.2);
+            --sticker-bg: #FAEEE0;
+            --sticker-hover: #CBBFD3;
+        }
+
+        [data-theme="dark"] {
+            /* Dark Mode Colors - Moody Halloween */
+            --bg-primary: #2C251D;
+            --bg-secondary: #3A3229;
+            --bg-card: rgba(76, 87, 81, 0.4);
+            --text-primary: #E8DDD3;
+            --text-secondary: #C4B8AE;
+            --accent-primary: #8F5D3D;
+            --accent-secondary: #2F4E49;
+            --accent-tertiary: #513C4E;
+            --border-color: #4C5751;
+            --button-bg: #8F5D3D;
+            --button-hover: #A36D4D;
+            --button-secondary-bg: #2F4E49;
+            --button-secondary-hover: #3A5F59;
+            --button-danger-bg: #683651;
+            --button-danger-hover: #7A4461;
+            --shadow-color: rgba(0, 0, 0, 0.4);
+            --sticker-bg: #3A3229;
+            --sticker-hover: #513C4E;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes fall {
+            0% {
+                transform: translateY(-100px) rotate(0deg);
+                opacity: 0;
+            }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0) rotate(-180deg); opacity: 0; }
+            50% { transform: scale(1.2) rotate(10deg); }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+
+        @keyframes polaroidShake {
+            0%, 100% { transform: translateX(0) rotate(0deg); }
+            20% { transform: translateX(-10px) rotate(-3deg); }
+            40% { transform: translateX(10px) rotate(3deg); }
+            60% { transform: translateX(-8px) rotate(-2deg); }
+            80% { transform: translateX(8px) rotate(2deg); }
+        }
+
+        @keyframes wiggle {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-3deg); }
+            75% { transform: rotate(3deg); }
+        }
+
+        body {
+            font-family: 'Covered By Your Grace', cursive;
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: var(--text-primary);
+            transition: background 0.5s ease;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Grain texture overlay */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px),
+                repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.5;
+        }
+
+        /* Falling leaves animation */
+        .leaf {
+            position: fixed;
+            width: 30px;
+            height: 30px;
+            font-size: 30px;
+            animation: fall linear infinite;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Decorative corners */
+        .corner-decor {
+            position: fixed;
+            font-size: 3em;
+            opacity: 0.3;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .corner-decor.top-left { top: 20px; left: 20px; }
+        .corner-decor.top-right { top: 20px; right: 20px; }
+        .corner-decor.bottom-left { bottom: 20px; left: 20px; }
+        .corner-decor.bottom-right { bottom: 20px; right: 20px; }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            position: relative;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .header-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        h1 {
+            font-family: 'Fredoka One', cursive;
+            font-size: 3em;
+            color: var(--accent-primary);
+            text-shadow: 4px 4px 0px var(--shadow-color);
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+
+        [data-theme="dark"] h1 {
+            text-shadow: 4px 4px 0px var(--shadow-color), 0 0 20px rgba(143, 93, 61, 0.5);
+        }
+
+        .subtitle {
+            font-family: 'Permanent Marker', cursive;
+            font-size: 1.3em;
+            color: var(--text-secondary);
+        }
+
+        /* Theme Toggle */
+        .theme-toggle, .small-button {
+            background: var(--button-bg);
+            color: var(--bg-primary);
+            border: 3px solid var(--border-color);
+            padding: 10px 20px;
+            font-size: 1em;
+            font-family: 'Covered By Your Grace', cursive;
+            font-weight: bold;
+            border-radius: 20px;
+            cursor: pointer;
+            box-shadow: 3px 3px 0px var(--shadow-color);
+            transition: all 0.2s;
+        }
+
+        .theme-toggle:hover, .small-button:hover {
+            transform: translate(1px, 1px) scale(1.05);
+            box-shadow: 2px 2px 0px var(--shadow-color);
+        }
+
+        .theme-toggle:active, .small-button:active {
+            transform: translate(3px, 3px);
+            box-shadow: 0px 0px 0px var(--shadow-color);
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr 300px;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .sticker-palette {
+                grid-column: 1 / -1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+        }
+
+        .section {
+            background: var(--bg-card);
+            backdrop-filter: blur(10px);
+            border: 3px solid var(--border-color);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 5px 5px 0px var(--shadow-color), inset 0 0 20px rgba(255,255,255,0.1);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .photo-container {
+            position: relative;
+        }
+
+        /* Scrapbook tape decorations */
+        .section::before,
+        .section::after {
+            content: '';
+            position: absolute;
+            background-image: url('stickers/washi-tape-watercolor-element-for-decorate-free-png.png');
+            background-size: cover;
+            background-position: center;
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        .section::before {
+            top: -15px;
+            left: 20%;
+            width: 120px;
+            height: 40px;
+            transform: rotate(-5deg);
+        }
+
+        .section::after {
+            bottom: -15px;
+            right: 20%;
+            width: 120px;
+            height: 40px;
+            transform: rotate(5deg);
+        }
+
+        .section:hover {
+            box-shadow: 6px 6px 0px var(--shadow-color), inset 0 0 20px rgba(255,255,255,0.2);
+        }
+
+        .section h2 {
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+            font-size: 1.8em;
+            border-bottom: 3px dashed var(--accent-primary);
+            padding-bottom: 12px;
+        }
+
+        #webcam {
+            width: 100%;
+            border-radius: 15px;
+            background: var(--bg-secondary);
+            display: block;
+            border: 3px solid var(--border-color);
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.2);
+        }
+
+        #webcam.mirror {
+            transform: scaleX(-1);
+        }
+
+        #photoCanvas {
+            width: 100%;
+            border-radius: 15px;
+            background: var(--bg-secondary);
+            border: 3px dashed var(--border-color);
+            cursor: crosshair;
+            display: none;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        #photoCanvas.active {
+            display: block;
+        }
+
+        #photoCanvas.shake {
+            animation: polaroidShake 0.6s ease-in-out;
+        }
+
+        .placeholder {
+            width: 100%;
+            aspect-ratio: 4/3;
+            background: repeating-linear-gradient(
+                45deg,
+                var(--bg-secondary),
+                var(--bg-secondary) 15px,
+                var(--bg-primary) 15px,
+                var(--bg-primary) 30px
+            );
+            border-radius: 15px;
+            border: 3px dashed var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            font-size: 1.4em;
+            text-align: center;
+            padding: 20px;
+            font-family: 'Permanent Marker', cursive;
+        }
+
+        .button {
+            background: var(--button-bg);
+            color: var(--bg-primary);
+            border: 3px solid var(--border-color);
+            padding: 14px 35px;
+            font-size: 1.2em;
+            font-family: 'Covered By Your Grace', cursive;
+            font-weight: bold;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 4px 4px 0px var(--shadow-color);
+            transition: all 0.2s;
+            margin: 10px 8px;
+            position: relative;
+        }
+
+        .button:hover {
+            background: var(--button-hover);
+            transform: translate(2px, 2px) scale(1.02);
+            box-shadow: 2px 2px 0px var(--shadow-color);
+        }
+
+        .button:active {
+            transform: translate(4px, 4px);
+            box-shadow: 0px 0px 0px var(--shadow-color);
+        }
+
+        .button:disabled {
+            background: var(--text-secondary);
+            cursor: not-allowed;
+            opacity: 0.5;
+            transform: none;
+        }
+
+        .button.secondary {
+            background: var(--button-secondary-bg);
+        }
+
+        .button.secondary:hover {
+            background: var(--button-secondary-hover);
+        }
+
+        .button.danger {
+            background: var(--button-danger-bg);
+        }
+
+        .button.danger:hover {
+            background: var(--button-danger-hover);
+        }
+
+        .controls {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .filter-controls, .editing-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+
+        .sticker-palette {
+            background: var(--bg-card);
+            backdrop-filter: blur(10px);
+            border: 3px solid var(--border-color);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 5px 5px 0px var(--shadow-color), inset 0 0 20px rgba(255,255,255,0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .sticker-palette::before,
+        .sticker-palette::after {
+            content: '';
+            position: absolute;
+            background-image: url('stickers/washi-tape-watercolor-element-for-decorate-free-png.png');
+            background-size: cover;
+            background-position: center;
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .sticker-palette::before {
+            top: -12px;
+            left: 15%;
+            width: 140px;
+            height: 35px;
+            transform: rotate(2deg);
+        }
+
+        .sticker-palette::after {
+            top: -12px;
+            right: 15%;
+            width: 140px;
+            height: 35px;
+            transform: rotate(-2deg);
+        }
+
+        .sticker-palette h2 {
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+            font-size: 1.8em;
+            border-bottom: 3px dashed var(--accent-primary);
+            padding-bottom: 12px;
+        }
+
+        .sticker-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 18px;
+            margin-bottom: 15px;
+        }
+
+        .sticker-item {
+            width: 90px;
+            height: 90px;
+            background: var(--sticker-bg);
+            border: 3px solid var(--border-color);
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            box-shadow: 2px 2px 0px var(--shadow-color);
+        }
+
+        .sticker-item:hover {
+            transform: scale(1.1) rotate(3deg);
+            background: var(--sticker-hover);
+            box-shadow: 0 0 15px var(--accent-primary);
+            animation: wiggle 0.5s ease-in-out;
+        }
+
+        [data-theme="dark"] .sticker-item:hover {
+            box-shadow: 0 0 20px rgba(143, 93, 61, 0.8);
+        }
+
+        .sticker-item img {
+            max-width: 85%;
+            max-height: 85%;
+            object-fit: contain;
+        }
+
+        .placed-sticker, .placed-text {
+            position: absolute;
+            cursor: move;
+            user-select: none;
+            -webkit-user-select: none;
+            transition: transform 0.15s;
+            z-index: 100;
+            animation: popIn 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .placed-sticker:hover, .placed-text:hover {
+            transform: scale(1.08);
+            filter: drop-shadow(0 0 8px var(--accent-primary));
+            z-index: 200;
+        }
+
+        [data-theme="dark"] .placed-sticker:hover, [data-theme="dark"] .placed-text:hover {
+            filter: drop-shadow(0 0 12px rgba(143, 93, 61, 0.8));
+        }
+
+        .placed-sticker.dragging, .placed-text.dragging {
+            opacity: 0.75;
+            z-index: 1000;
+        }
+
+        .placed-sticker.selected, .placed-text.selected {
+            outline: 3px dashed var(--accent-primary);
+            outline-offset: 5px;
+        }
+
+        .sticker-controls {
+            position: absolute;
+            top: -35px;
+            right: -5px;
+            display: none;
+            gap: 5px;
+        }
+
+        .placed-sticker.selected .sticker-controls,
+        .placed-text.selected .sticker-controls {
+            display: flex;
+        }
+
+        .sticker-control-btn {
+            width: 28px;
+            height: 28px;
+            background: var(--button-danger-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            box-shadow: 2px 2px 0px var(--shadow-color);
+            transition: all 0.2s;
+        }
+
+        .sticker-control-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .sticker-control-btn.rotate {
+            background: var(--button-secondary-bg);
+        }
+
+        .resize-handle {
+            position: absolute;
+            bottom: -5px;
+            right: -5px;
+            width: 20px;
+            height: 20px;
+            background: var(--button-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 50%;
+            cursor: nwse-resize;
+            display: none;
+            z-index: 1001;
+        }
+
+        .placed-sticker.selected .resize-handle,
+        .placed-text.selected .resize-handle {
+            display: block;
+        }
+
+        .placed-text {
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+            font-size: 32px;
+            color: var(--text-primary);
+            text-shadow: 2px 2px 0px var(--shadow-color);
+            padding: 10px 20px;
+            background: transparent;
+            white-space: nowrap;
+        }
+
+        .countdown {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 10em;
+            font-family: 'Fredoka One', cursive;
+            color: var(--accent-primary);
+            text-shadow: 5px 5px 0px var(--shadow-color);
+            animation: popIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            z-index: 1000;
+            pointer-events: none;
+        }
+
+        .info-text {
+            color: var(--text-secondary);
+            font-size: 1.1em;
+            margin-top: 12px;
+            text-align: center;
+            font-family: 'Covered By Your Grace', cursive;
+        }
+
+        .status-message {
+            text-align: center;
+            padding: 12px;
+            margin: 12px 0;
+            border-radius: 15px;
+            display: none;
+            font-family: 'Permanent Marker', cursive;
+            font-size: 1.1em;
+            animation: popIn 0.3s ease-out;
+        }
+
+        .status-message.success {
+            background: rgba(104, 102, 15, 0.2);
+            border: 2px solid var(--accent-secondary);
+            color: var(--accent-secondary);
+            display: block;
+        }
+
+        .status-message.error {
+            background: rgba(146, 71, 85, 0.2);
+            border: 2px solid var(--button-danger-bg);
+            color: var(--button-danger-bg);
+            display: block;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            color: var(--text-secondary);
+            font-size: 1.1em;
+            font-family: 'Covered By Your Grace', cursive;
+        }
+
+        /* Filter effects */
+        #photoCanvas.filter-sepia {
+            filter: sepia(0.7) contrast(1.1);
+        }
+
+        #photoCanvas.filter-vintage {
+            filter: sepia(0.5) contrast(1.2) brightness(0.9) saturate(0.8);
+        }
+
+        #photoCanvas.filter-grainy {
+            filter: contrast(1.2) brightness(1.05);
+        }
+
+        #photoCanvas.filter-spooky {
+            filter: contrast(1.3) brightness(0.8) saturate(0.6) hue-rotate(20deg);
+        }
+
+        /* Text input modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--bg-card);
+            border: 3px solid var(--border-color);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 10px 10px 0px var(--shadow-color);
+        }
+
+        .modal h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            color: var(--text-secondary);
+        }
+
+        .modal input {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.2em;
+            font-family: 'Covered By Your Grace', cursive;
+            border: 3px solid var(--border-color);
+            border-radius: 10px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            margin-bottom: 20px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Text input modal -->
+    <div class="modal-overlay" id="textModal">
+        <div class="modal">
+            <h3>Add Text to Photo</h3>
+            <input type="text" id="textInput" placeholder="Enter your text..." maxlength="50">
+            <div class="modal-buttons">
+                <button class="small-button" onclick="cancelText()">Cancel</button>
+                <button class="button" onclick="addTextToPhoto()">Add Text</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <header>
+            <div class="header-controls">
+                <button id="themeToggle" class="theme-toggle">🌙 Dark Mode</button>
+                <button id="mirrorToggle" class="small-button">🪞 Mirror</button>
+            </div>
+            <h1>Halloween Photo Booth</h1>
+            <p class="subtitle">Capture the spooky season magic!</p>
+        </header>
+
+        <div id="statusMessage" class="status-message"></div>
+
+        <div class="main-content">
+            <div class="section">
+                <h2>Camera</h2>
+                <video id="webcam" autoplay playsinline></video>
+                <div class="controls">
+                    <button id="startCamera" class="button">🎬 Start Camera</button>
+                    <button id="takePhoto" class="button secondary" disabled>📸 Take Photo (3s)</button>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>Your Photo</h2>
+                <div id="photoPlaceholder" class="placeholder">
+                    Your captured photo will appear here
+                </div>
+                <canvas id="photoCanvas"></canvas>
+
+                <div class="filter-controls" id="filterControls" style="display: none;">
+                    <button class="small-button filter-btn" data-filter="none">✨ Normal</button>
+                    <button class="small-button filter-btn" data-filter="sepia">🍂 Sepia</button>
+                    <button class="small-button filter-btn" data-filter="vintage">📜 Vintage</button>
+                    <button class="small-button filter-btn" data-filter="spooky">👻 Spooky</button>
+                </div>
+
+                <div class="controls">
+                    <button id="addTextBtn" class="small-button" disabled>Aa Add Text</button>
+                    <button id="undoBtn" class="small-button" disabled>↶ Undo</button>
+                    <button id="redoBtn" class="small-button" disabled>↷ Redo</button>
+                    <button id="downloadPhoto" class="button" disabled>💾 Download</button>
+                    <button id="clearPhoto" class="button danger" disabled>🗑️ Clear</button>
+                </div>
+            </div>
+
+            <div class="sticker-palette">
+                <h2>Sticker Collection</h2>
+                <p class="info-text">Click to add • Drag to move • Click to select • Double-click to delete</p>
+                <div id="stickerGrid" class="sticker-grid"></div>
+            </div>
+        </div>
+
+        <footer>
+            <p>Made with warmth and autumn vibes 🍂</p>
+        </footer>
+    </div>
+
+    <script>
+        // Application state
+        const state = {
+            stream: null,
+            capturedPhoto: null,
+            stickers: [],
+            placedStickers: [],
+            isDragging: false,
+            draggedSticker: null,
+            dragOffset: { x: 0, y: 0 },
+            theme: 'light',
+            mirrorMode: false,
+            selectedSticker: null,
+            currentFilter: 'none',
+            history: [],
+            historyIndex: -1,
+            isResizing: false,
+            resizingSticker: null,
+            resizeStart: { x: 0, y: 0, width: 0, height: 0 }
+        };
+
+        // DOM elements
+        const elements = {
+            webcam: document.getElementById('webcam'),
+            photoCanvas: document.getElementById('photoCanvas'),
+            photoPlaceholder: document.getElementById('photoPlaceholder'),
+            startCamera: document.getElementById('startCamera'),
+            takePhoto: document.getElementById('takePhoto'),
+            downloadPhoto: document.getElementById('downloadPhoto'),
+            clearPhoto: document.getElementById('clearPhoto'),
+            stickerGrid: document.getElementById('stickerGrid'),
+            statusMessage: document.getElementById('statusMessage'),
+            themeToggle: document.getElementById('themeToggle'),
+            mirrorToggle: document.getElementById('mirrorToggle'),
+            filterControls: document.getElementById('filterControls'),
+            undoBtn: document.getElementById('undoBtn'),
+            redoBtn: document.getElementById('redoBtn'),
+            addTextBtn: document.getElementById('addTextBtn'),
+            textModal: document.getElementById('textModal'),
+            textInput: document.getElementById('textInput')
+        };
+
+        // Available stickers (including GIFs)
+        const stickerFiles = [
+            'black-cat.png',
+            'snoopy.png',
+            'Snoopy pumpkin-Picsart-BackgroundRemover.png',
+            'butterfly.png',
+            'rainbow-icon.png',
+            'Autumn-Aesthetic-Theme-PNG-Isolated-File.png',
+            'Halloween-Aesthetic-PNG-File.png',
+            'pngtree-pumpkin-autumn-aesthetic-stickers-png-image_13317498.png',
+            '674x662.png',
+            'divinity-lost-kult-divinity-lost-tarot-cards-11562938277hevgcq3e7y.png',
+            'fa869743d08ca95414a50cc0ec1526bd.png',
+            'png-ripped-paper-png-Aesthetic-Vintage-Pngs_thumbnail.png',
+            '09de759dd50867ecefb505655db0aa79.gif',
+            '0a7f9ab5e3792437352d60f809481b3f.gif',
+            '38f848274150b46c4a832a20579f4d72.gif',
+            '3de50e4641c6eeb66f2b6f5f390e5461.gif',
+            '79cb4e6b1322929eec4e61c39ec95ea2.gif'
+        ];
+
+        // Create falling leaves
+        function createFallingLeaves() {
+            const leaves = ['🍂', '🍁'];
+            for (let i = 0; i < 5; i++) {
+                const leaf = document.createElement('div');
+                leaf.className = 'leaf';
+                leaf.textContent = leaves[Math.floor(Math.random() * leaves.length)];
+                leaf.style.left = Math.random() * 100 + '%';
+                leaf.style.animationDuration = (10 + Math.random() * 10) + 's';
+                leaf.style.animationDelay = Math.random() * 5 + 's';
+                document.body.appendChild(leaf);
+            }
+        }
+
+        // Theme Toggle
+        function toggleTheme() {
+            state.theme = state.theme === 'light' ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', state.theme);
+            elements.themeToggle.textContent = state.theme === 'dark' ? '☀️ Light Mode' : '🌙 Dark Mode';
+            localStorage.setItem('theme', state.theme);
+        }
+
+        // Mirror Toggle
+        function toggleMirror() {
+            state.mirrorMode = !state.mirrorMode;
+            elements.webcam.classList.toggle('mirror', state.mirrorMode);
+            elements.mirrorToggle.textContent = state.mirrorMode ? '🪞 Normal' : '🪞 Mirror';
+        }
+
+        // Load saved theme
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            state.theme = savedTheme;
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            if (savedTheme === 'dark') {
+                elements.themeToggle.textContent = '☀️ Light Mode';
+            }
+        }
+
+        // Text functions
+        function showTextModal() {
+            elements.textModal.classList.add('active');
+            elements.textInput.value = '';
+            elements.textInput.focus();
+        }
+
+        function cancelText() {
+            elements.textModal.classList.remove('active');
+        }
+
+        function addTextToPhoto() {
+            const text = elements.textInput.value.trim();
+            if (!text) return;
+
+            const canvas = elements.photoCanvas;
+            const canvasRect = canvas.getBoundingClientRect();
+
+            const textDiv = document.createElement('div');
+            textDiv.className = 'placed-text';
+            textDiv.textContent = text;
+            textDiv.dataset.text = text;
+            textDiv.dataset.type = 'text';
+
+            const controls = document.createElement('div');
+            controls.className = 'sticker-controls';
+
+            const rotateBtn = document.createElement('div');
+            rotateBtn.className = 'sticker-control-btn rotate';
+            rotateBtn.innerHTML = '↻';
+            rotateBtn.onclick = (e) => {
+                e.stopPropagation();
+                rotateSticker(textDiv);
+            };
+
+            const deleteBtn = document.createElement('div');
+            deleteBtn.className = 'sticker-control-btn delete';
+            deleteBtn.innerHTML = '×';
+            deleteBtn.onclick = (e) => {
+                e.stopPropagation();
+                deleteSticker(textDiv);
+            };
+
+            controls.appendChild(rotateBtn);
+            controls.appendChild(deleteBtn);
+            textDiv.appendChild(controls);
+
+            const resizeHandle = document.createElement('div');
+            resizeHandle.className = 'resize-handle';
+            textDiv.appendChild(resizeHandle);
+
+            const x = canvasRect.left + (canvasRect.width / 2) - 100;
+            const y = canvasRect.top + (canvasRect.height / 2) - 20;
+
+            textDiv.style.left = `${x}px`;
+            textDiv.style.top = `${y}px`;
+
+            textDiv.onclick = (e) => {
+                if (!state.isDragging && !state.isResizing) {
+                    selectSticker(textDiv);
+                }
+            };
+
+            textDiv.ondblclick = (e) => {
+                e.stopPropagation();
+                deleteSticker(textDiv);
+            };
+
+            document.body.appendChild(textDiv);
+            addResizeListener(textDiv, resizeHandle);
+
+            state.placedStickers.push({
+                element: textDiv,
+                filename: text,
+                x: x - canvasRect.left,
+                y: y - canvasRect.top,
+                width: textDiv.offsetWidth,
+                height: textDiv.offsetHeight,
+                rotation: 0,
+                type: 'text'
+            });
+
+            addDragListeners(textDiv);
+            cancelText();
+            saveState();
+        }
+
+        // History management
+        function saveState() {
+            const stateSnapshot = {
+                placedStickers: state.placedStickers.map(s => ({
+                    filename: s.filename,
+                    x: parseFloat(s.element.style.left),
+                    y: parseFloat(s.element.style.top),
+                    width: s.width,
+                    height: s.height,
+                    rotation: s.rotation || 0,
+                    type: s.type || 'sticker'
+                })),
+                filter: state.currentFilter
+            };
+
+            state.history = state.history.slice(0, state.historyIndex + 1);
+            state.history.push(stateSnapshot);
+            state.historyIndex++;
+
+            updateHistoryButtons();
+        }
+
+        function updateHistoryButtons() {
+            elements.undoBtn.disabled = state.historyIndex <= 0;
+            elements.redoBtn.disabled = state.historyIndex >= state.history.length - 1;
+        }
+
+        function undo() {
+            if (state.historyIndex > 0) {
+                state.historyIndex--;
+                restoreState(state.history[state.historyIndex]);
+            }
+        }
+
+        function redo() {
+            if (state.historyIndex < state.history.length - 1) {
+                state.historyIndex++;
+                restoreState(state.history[state.historyIndex]);
+            }
+        }
+
+        function restoreState(snapshot) {
+            state.placedStickers.forEach(s => s.element.remove());
+            state.placedStickers = [];
+
+            snapshot.placedStickers.forEach(s => {
+                if (s.type === 'text') {
+                    elements.textInput.value = s.filename;
+                    addTextToPhoto();
+                    const lastSticker = state.placedStickers[state.placedStickers.length - 1];
+                    if (lastSticker) {
+                        lastSticker.element.style.left = `${s.x}px`;
+                        lastSticker.element.style.top = `${s.y}px`;
+                        lastSticker.element.style.transform = `rotate(${s.rotation}deg)`;
+                        lastSticker.rotation = s.rotation;
+                    }
+                } else {
+                    addStickerToPhoto(s.filename, s.x, s.y, s.rotation);
+                }
+            });
+
+            applyFilter(snapshot.filter);
+            updateHistoryButtons();
+        }
+
+        // Initialize sticker palette
+        function initStickers() {
+            elements.stickerGrid.innerHTML = '';
+
+            stickerFiles.forEach(filename => {
+                const stickerItem = document.createElement('div');
+                stickerItem.className = 'sticker-item';
+
+                const img = document.createElement('img');
+                img.src = `stickers/${filename}`;
+                img.alt = filename.replace(/\.(png|gif)/, '').replace(/-/g, ' ');
+
+                img.onerror = () => {
+                    stickerItem.style.display = 'none';
+                };
+
+                img.onload = () => {
+                    state.stickers.push({ filename, img });
+                };
+
+                stickerItem.appendChild(img);
+                stickerItem.addEventListener('click', () => {
+                    addStickerToPhoto(filename);
+                    saveState();
+                });
+
+                elements.stickerGrid.appendChild(stickerItem);
+            });
+        }
+
+        // Show status message
+        function showStatus(message, type = 'success') {
+            elements.statusMessage.textContent = message;
+            elements.statusMessage.className = `status-message ${type}`;
+
+            setTimeout(() => {
+                elements.statusMessage.style.display = 'none';
+            }, 3000);
+        }
+
+        // Countdown before photo
+        async function showCountdown() {
+            return new Promise((resolve) => {
+                let count = 3;
+                const countdownEl = document.createElement('div');
+                countdownEl.className = 'countdown';
+                countdownEl.textContent = count;
+                document.querySelector('.section').appendChild(countdownEl);
+
+                const interval = setInterval(() => {
+                    count--;
+                    if (count > 0) {
+                        countdownEl.textContent = count;
+                        countdownEl.style.animation = 'none';
+                        setTimeout(() => countdownEl.style.animation = 'popIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55)', 10);
+                    } else {
+                        clearInterval(interval);
+                        countdownEl.remove();
+                        resolve();
+                    }
+                }, 1000);
+            });
+        }
+
+        // Start camera
+        async function startCamera() {
+            try {
+                state.stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: 'user' },
+                    audio: false
+                });
+
+                elements.webcam.srcObject = state.stream;
+                elements.startCamera.disabled = true;
+                elements.takePhoto.disabled = false;
+
+                showStatus('Camera started! Ready to take photos.', 'success');
+            } catch (error) {
+                showStatus('Unable to access camera. Please check permissions.', 'error');
+                console.error('Camera error:', error);
+            }
+        }
+
+        // Take photo
+        async function takePhoto() {
+            await showCountdown();
+
+            const video = elements.webcam;
+            const canvas = elements.photoCanvas;
+            const ctx = canvas.getContext('2d');
+
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+
+            if (state.mirrorMode) {
+                ctx.translate(canvas.width, 0);
+                ctx.scale(-1, 1);
+            }
+
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            if (state.mirrorMode) {
+                ctx.setTransform(1, 0, 0, 1, 0, 0);
+            }
+
+            state.capturedPhoto = canvas.toDataURL('image/png');
+
+            elements.photoPlaceholder.style.display = 'none';
+            canvas.classList.add('active', 'shake');
+            setTimeout(() => canvas.classList.remove('shake'), 600);
+
+            elements.downloadPhoto.disabled = false;
+            elements.clearPhoto.disabled = false;
+            elements.filterControls.style.display = 'flex';
+            elements.addTextBtn.disabled = false;
+
+            state.placedStickers.forEach(sticker => sticker.element.remove());
+            state.placedStickers = [];
+
+            state.history = [{ placedStickers: [], filter: 'none' }];
+            state.historyIndex = 0;
+            updateHistoryButtons();
+
+            showStatus('Photo captured! Add stickers to make it festive.', 'success');
+        }
+
+        // Apply filter
+        function applyFilter(filterName) {
+            state.currentFilter = filterName;
+            elements.photoCanvas.className = 'active';
+            if (filterName !== 'none') {
+                elements.photoCanvas.classList.add(`filter-${filterName}`);
+            }
+
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.style.opacity = btn.dataset.filter === filterName ? '1' : '0.6';
+            });
+        }
+
+        // Add sticker to photo
+        function addStickerToPhoto(filename, x = null, y = null, rotation = 0) {
+            if (!state.capturedPhoto) {
+                showStatus('Please take a photo first!', 'error');
+                return;
+            }
+
+            const canvas = elements.photoCanvas;
+            const canvasRect = canvas.getBoundingClientRect();
+
+            const stickerDiv = document.createElement('div');
+            stickerDiv.className = 'placed-sticker';
+            stickerDiv.style.position = 'absolute';
+
+            const img = document.createElement('img');
+            img.src = `stickers/${filename}`;
+            img.style.width = '120px';
+            img.style.height = '120px';
+            img.style.pointerEvents = 'none';
+            img.style.objectFit = 'contain';
+
+            const controls = document.createElement('div');
+            controls.className = 'sticker-controls';
+
+            const rotateBtn = document.createElement('div');
+            rotateBtn.className = 'sticker-control-btn rotate';
+            rotateBtn.innerHTML = '↻';
+            rotateBtn.onclick = (e) => {
+                e.stopPropagation();
+                rotateSticker(stickerDiv);
+            };
+
+            const deleteBtn = document.createElement('div');
+            deleteBtn.className = 'sticker-control-btn delete';
+            deleteBtn.innerHTML = '×';
+            deleteBtn.onclick = (e) => {
+                e.stopPropagation();
+                deleteSticker(stickerDiv);
+            };
+
+            controls.appendChild(rotateBtn);
+            controls.appendChild(deleteBtn);
+            stickerDiv.appendChild(controls);
+            stickerDiv.appendChild(img);
+
+            const resizeHandle = document.createElement('div');
+            resizeHandle.className = 'resize-handle';
+            stickerDiv.appendChild(resizeHandle);
+
+            // Position sticker relative to canvas, not body
+            const posX = x !== null ? x : (canvasRect.width / 2) - 60;
+            const posY = y !== null ? y : (canvasRect.height / 2) - 60;
+
+            stickerDiv.style.left = `${canvasRect.left + posX}px`;
+            stickerDiv.style.top = `${canvasRect.top + posY}px`;
+            stickerDiv.style.transform = `rotate(${rotation}deg)`;
+
+            stickerDiv.onclick = (e) => {
+                if (!state.isDragging && !state.isResizing) {
+                    selectSticker(stickerDiv);
+                }
+            };
+
+            stickerDiv.ondblclick = (e) => {
+                e.stopPropagation();
+                deleteSticker(stickerDiv);
+            };
+
+            document.body.appendChild(stickerDiv);
+            addResizeListener(stickerDiv, resizeHandle);
+
+            state.placedStickers.push({
+                element: stickerDiv,
+                filename,
+                x: posX,
+                y: posY,
+                width: 120,
+                height: 120,
+                rotation: rotation,
+                type: 'sticker'
+            });
+
+            addDragListeners(stickerDiv);
+        }
+
+        function selectSticker(stickerDiv) {
+            if (state.selectedSticker) {
+                state.selectedSticker.classList.remove('selected');
+            }
+
+            state.selectedSticker = stickerDiv;
+            stickerDiv.classList.add('selected');
+        }
+
+        function rotateSticker(stickerDiv) {
+            const sticker = state.placedStickers.find(s => s.element === stickerDiv);
+            if (sticker) {
+                sticker.rotation = (sticker.rotation || 0) + 15;
+                stickerDiv.style.transform = `rotate(${sticker.rotation}deg)`;
+                saveState();
+            }
+        }
+
+        function deleteSticker(stickerDiv) {
+            const index = state.placedStickers.findIndex(s => s.element === stickerDiv);
+            if (index !== -1) {
+                state.placedStickers[index].element.remove();
+                state.placedStickers.splice(index, 1);
+                if (state.selectedSticker === stickerDiv) {
+                    state.selectedSticker = null;
+                }
+                saveState();
+            }
+        }
+
+        // Drag functionality
+        function addDragListeners(stickerElement) {
+            stickerElement.addEventListener('mousedown', startDrag);
+            stickerElement.addEventListener('touchstart', startDrag);
+        }
+
+        function startDrag(e) {
+            if (e.target.classList.contains('sticker-control-btn')) return;
+
+            e.preventDefault();
+
+            state.isDragging = true;
+            state.draggedSticker = e.currentTarget;
+            state.draggedSticker.classList.add('dragging');
+            selectSticker(state.draggedSticker);
+
+            const rect = state.draggedSticker.getBoundingClientRect();
+            const clientX = e.type === 'touchstart' ? e.touches[0].clientX : e.clientX;
+            const clientY = e.type === 'touchstart' ? e.touches[0].clientY : e.clientY;
+
+            state.dragOffset = {
+                x: clientX - rect.left,
+                y: clientY - rect.top
+            };
+
+            document.addEventListener('mousemove', drag);
+            document.addEventListener('touchmove', drag);
+            document.addEventListener('mouseup', endDrag);
+            document.addEventListener('touchend', endDrag);
+        }
+
+        function drag(e) {
+            if (!state.isDragging) return;
+
+            const clientX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
+            const clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
+
+            const newX = clientX - state.dragOffset.x;
+            const newY = clientY - state.dragOffset.y;
+
+            state.draggedSticker.style.left = `${newX}px`;
+            state.draggedSticker.style.top = `${newY}px`;
+        }
+
+        function endDrag() {
+            if (!state.isDragging) return;
+
+            state.draggedSticker.classList.remove('dragging');
+            state.isDragging = false;
+            state.draggedSticker = null;
+
+            document.removeEventListener('mousemove', drag);
+            document.removeEventListener('touchmove', drag);
+            document.removeEventListener('mouseup', endDrag);
+            document.removeEventListener('touchend', endDrag);
+
+            saveState();
+        }
+
+        // Resize functionality
+        function addResizeListener(stickerElement, resizeHandle) {
+            resizeHandle.addEventListener('mousedown', startResize);
+            resizeHandle.addEventListener('touchstart', startResize);
+        }
+
+        function startResize(e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const stickerElement = e.target.parentElement;
+            state.isResizing = true;
+            state.resizingSticker = stickerElement;
+
+            const rect = stickerElement.getBoundingClientRect();
+            const clientX = e.type === 'touchstart' ? e.touches[0].clientX : e.clientX;
+            const clientY = e.type === 'touchstart' ? e.touches[0].clientY : e.clientY;
+
+            state.resizeStart = {
+                x: clientX,
+                y: clientY,
+                width: rect.width,
+                height: rect.height
+            };
+
+            document.addEventListener('mousemove', resize);
+            document.addEventListener('touchmove', resize);
+            document.addEventListener('mouseup', endResize);
+            document.addEventListener('touchend', endResize);
+        }
+
+        function resize(e) {
+            if (!state.isResizing) return;
+
+            const clientX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
+            const clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
+
+            const deltaX = clientX - state.resizeStart.x;
+            const deltaY = clientY - state.resizeStart.y;
+            const delta = Math.max(deltaX, deltaY);
+
+            const newSize = Math.max(50, state.resizeStart.width + delta);
+
+            const img = state.resizingSticker.querySelector('img');
+            if (img) {
+                img.style.width = `${newSize}px`;
+                img.style.height = `${newSize}px`;
+            } else {
+                // For text elements, adjust font size
+                const currentFontSize = parseInt(getComputedStyle(state.resizingSticker).fontSize);
+                const scaleFactor = newSize / state.resizeStart.width;
+                const newFontSize = Math.max(16, currentFontSize * scaleFactor);
+                state.resizingSticker.style.fontSize = `${newFontSize}px`;
+            }
+
+            // Update sticker data
+            const sticker = state.placedStickers.find(s => s.element === state.resizingSticker);
+            if (sticker) {
+                sticker.width = newSize;
+                sticker.height = newSize;
+            }
+        }
+
+        function endResize() {
+            if (!state.isResizing) return;
+
+            state.isResizing = false;
+            state.resizingSticker = null;
+
+            document.removeEventListener('mousemove', resize);
+            document.removeEventListener('touchmove', resize);
+            document.removeEventListener('mouseup', endResize);
+            document.removeEventListener('touchend', endResize);
+
+            saveState();
+        }
+
+        // Download photo with stickers
+        function downloadPhoto() {
+            const canvas = elements.photoCanvas;
+            const tempCanvas = document.createElement('canvas');
+            const ctx = tempCanvas.getContext('2d');
+
+            tempCanvas.width = canvas.width;
+            tempCanvas.height = canvas.height;
+
+            ctx.drawImage(canvas, 0, 0);
+
+            const canvasRect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / canvasRect.width;
+            const scaleY = canvas.height / canvasRect.height;
+
+            state.placedStickers.forEach(sticker => {
+                const stickerRect = sticker.element.getBoundingClientRect();
+
+                const x = (stickerRect.left - canvasRect.left) * scaleX;
+                const y = (stickerRect.top - canvasRect.top) * scaleY;
+                const width = stickerRect.width * scaleX;
+                const height = stickerRect.height * scaleY;
+
+                ctx.save();
+                ctx.translate(x + width/2, y + height/2);
+                ctx.rotate((sticker.rotation || 0) * Math.PI / 180);
+
+                if (sticker.type === 'text') {
+                    ctx.font = `bold ${48 * scaleX}px 'Playfair Display', serif`;
+                    ctx.fillStyle = getComputedStyle(sticker.element).color;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+                    ctx.shadowBlur = 4;
+                    ctx.shadowOffsetX = 2;
+                    ctx.shadowOffsetY = 2;
+                    ctx.fillText(sticker.element.dataset.text, 0, 0);
+                } else {
+                    const img = sticker.element.querySelector('img');
+                    ctx.drawImage(img, -width/2, -height/2, width, height);
+                }
+
+                ctx.restore();
+            });
+
+            const link = document.createElement('a');
+            link.download = `halloween-photo-${Date.now()}.png`;
+            link.href = tempCanvas.toDataURL('image/png');
+            link.click();
+
+            showStatus('Photo downloaded successfully!', 'success');
+        }
+
+        // Clear photo and stickers
+        function clearPhoto() {
+            state.placedStickers.forEach(sticker => sticker.element.remove());
+            state.placedStickers = [];
+
+            const ctx = elements.photoCanvas.getContext('2d');
+            ctx.clearRect(0, 0, elements.photoCanvas.width, elements.photoCanvas.height);
+
+            elements.photoCanvas.classList.remove('active');
+            elements.photoPlaceholder.style.display = 'flex';
+            elements.downloadPhoto.disabled = true;
+            elements.clearPhoto.disabled = true;
+            elements.filterControls.style.display = 'none';
+            elements.addTextBtn.disabled = true;
+
+            state.capturedPhoto = null;
+            state.selectedSticker = null;
+            state.currentFilter = 'none';
+
+            showStatus('Photo cleared. Ready for a new one!', 'success');
+        }
+
+        // Event listeners
+        elements.startCamera.addEventListener('click', startCamera);
+        elements.takePhoto.addEventListener('click', takePhoto);
+        elements.downloadPhoto.addEventListener('click', downloadPhoto);
+        elements.clearPhoto.addEventListener('click', clearPhoto);
+        elements.themeToggle.addEventListener('click', toggleTheme);
+        elements.mirrorToggle.addEventListener('click', toggleMirror);
+        elements.undoBtn.addEventListener('click', undo);
+        elements.redoBtn.addEventListener('click', redo);
+        elements.addTextBtn.addEventListener('click', showTextModal);
+
+        // Filter buttons
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                applyFilter(btn.dataset.filter);
+                saveState();
+            });
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey || e.metaKey) {
+                if (e.key === 'z') {
+                    e.preventDefault();
+                    undo();
+                } else if (e.key === 'y') {
+                    e.preventDefault();
+                    redo();
+                }
+            }
+
+            if (e.key === 'Delete' && state.selectedSticker) {
+                deleteSticker(state.selectedSticker);
+            }
+
+            if (e.key === 'Escape') {
+                cancelText();
+            }
+        });
+
+        // Initialize
+        loadTheme();
+        initStickers();
+        createFallingLeaves();
+    </script>
+</body>
+</html>
